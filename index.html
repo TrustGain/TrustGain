@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>🌟 Trust Gain 🌟</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;600&family=Hind+Siliguri:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            --gold: #FFD700;
+            --gold-dark: #B8860B;
+            --bg-dark: #020202;
+            --surface: rgba(15, 15, 15, 0.7);
+            --border: rgba(255, 215, 0, 0.12);
+            --glow: 0 0 20px rgba(255, 215, 0, 0.2);
+        }
+
+        body {
+            background: var(--bg-dark);
+            color: #fff;
+            font-family: 'Poppins', 'Hind Siliguri', sans-serif;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(255, 215, 0, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255, 215, 0, 0.05) 0%, transparent 40%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .glass-panel {
+            background: var(--surface);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #FFF5B7 0%, #FFD700 50%, #B8860B 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .btn-gold {
+            background: linear-gradient(45deg, #B8860B, #FFD700);
+            color: #000;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: var(--glow);
+        }
+
+        .dock-nav {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 400px;
+            height: 70px;
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 215, 0, 0.1);
+            border-radius: 25px;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .floating-anim {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        ::-webkit-scrollbar { width: 0; }
+    </style>
+</head>
+<body class="pb-32">
+
+<!-- Notice Window (Floating) -->
+<div id="notice-modal" class="fixed inset-0 z-[5000] bg-black/90 hidden flex items-center justify-center p-8 backdrop-blur-2xl">
+    <div class="glass-panel w-full max-w-sm p-10 text-center floating-anim border-yellow-500/30">
+        <div class="h-20 w-20 bg-yellow-500/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-yellow-500/20">
+            <i class="fas fa-bullhorn text-3xl gold-gradient-text"></i>
+        </div>
+        <h2 id="notice-title" class="text-xl font-black gold-gradient-text mb-4 uppercase tracking-tighter">Notification</h2>
+        <p id="notice-text" class="text-xs text-gray-400 leading-relaxed mb-8">Loading updates...</p>
+        <button onclick="closeM('notice-modal')" class="btn-gold px-12 py-4 rounded-2xl text-[10px]">Acknowledge</button>
+    </div>
+</div>
+
+<!-- Auth Section -->
+<div id="auth-screen" class="fixed inset-0 z-[2000] bg-[#020202] flex items-center justify-center p-6">
+    <div class="glass-panel w-full max-w-md p-10 text-center relative">
+        <div class="mb-10">
+            <h1 class="text-3xl gold-gradient-text font-black tracking-tighter mb-2">🌟 Trust Gain 🌟</h1>
+            <p class="text-[9px] text-gray-500 tracking-[0.4em] uppercase">Elite Financial Network</p>
+        </div>
+        
+        <div class="space-y-6">
+            <input type="email" id="auth-email" placeholder="Member Email" class="w-full bg-white/5 p-5 rounded-2xl outline-none text-sm border border-white/5 focus:border-yellow-500/30">
+            <input type="password" id="auth-pass" placeholder="Security Password" class="w-full bg-white/5 p-5 rounded-2xl outline-none text-sm border border-white/5 focus:border-yellow-500/30">
+            <button id="btn-auth-action" class="btn-gold w-full py-5 rounded-2xl text-sm">Authorize Access</button>
+            <p id="toggle-auth" class="text-[10px] text-gray-500 cursor-pointer pt-2 uppercase tracking-widest hover:text-yellow-500">Create Elite Profile</p>
+        </div>
+    </div>
+</div>
+
+<!-- App Shell -->
+<div id="main-app" class="hidden">
+    
+    <div id="home-screen" class="max-w-md mx-auto">
+        <header class="p-8 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-full bg-black border border-yellow-500/30 flex items-center justify-center">
+                    <i class="fas fa-crown text-xs text-yellow-500"></i>
+                </div>
+                <div>
+                    <h1 id="user-display" class="text-sm font-black gold-gradient-text uppercase">TRUST_MEMBER</h1>
+                    <p class="text-[8px] text-gray-500 uppercase tracking-widest">Global Asset Holder</p>
+                </div>
+            </div>
+            <div onclick="handleLogout()" class="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-red-500">
+                <i class="fas fa-power-off"></i>
+            </div>
+        </header>
+
+        <!-- Dynamic Balance -->
+        <section class="px-6 mb-8 text-center">
+            <div class="glass-panel p-10 relative overflow-hidden">
+                <p class="text-[10px] text-gray-500 uppercase tracking-[0.4em] mb-4">Total Asset Valuation</p>
+                <div class="flex items-baseline justify-center gap-2">
+                    <h2 id="main-balance" class="text-6xl font-black tracking-tighter gold-gradient-text">0.00</h2>
+                    <span class="text-xl font-bold text-yellow-500/40">৳</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Actions -->
+        <div class="px-6 grid grid-cols-2 gap-4 mb-8">
+            <div onclick="openM('withM')" class="glass-panel p-6 flex flex-col items-center gap-3 border-l-2 border-l-yellow-500 cursor-pointer hover:bg-white/5 transition">
+                <i class="fas fa-wallet text-yellow-500 text-xl"></i>
+                <span class="text-[9px] font-black uppercase tracking-widest">Withdraw</span>
+            </div>
+            <div onclick="window.open('https://t.me/SR_ASSET_STORE')" class="glass-panel p-6 flex flex-col items-center gap-3 cursor-pointer hover:bg-white/5 transition">
+                <i class="fab fa-telegram-plane text-blue-400 text-xl"></i>
+                <span class="text-[9px] font-black uppercase tracking-widest">Support</span>
+            </div>
+        </div>
+
+        <!-- Task Highlights -->
+        <section class="px-6 space-y-4">
+            <h3 class="text-[10px] font-black uppercase tracking-[0.3em] text-gray-600 pl-2">Available Streams</h3>
+            
+            <div onclick="watchAdTask()" class="glass-panel p-6 flex justify-between items-center group cursor-pointer hover:bg-white/5 transition">
+                <div class="flex items-center gap-4">
+                    <div class="h-12 w-12 rounded-2xl bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20">
+                        <i class="fas fa-play text-yellow-500"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold uppercase tracking-wider">Stream Ad Task</p>
+                        <p id="ad-reward-text" class="text-[9px] text-gray-500 mt-1">Reward: 1.00 ৳</p>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-gray-700 group-hover:translate-x-1 transition"></i>
+            </div>
+        </section>
+    </div>
+
+    <!-- Task Screen -->
+    <div id="task-list-screen" class="hidden fixed inset-0 bg-[#020202] z-[100] overflow-y-auto pb-32">
+        <header class="p-8 sticky top-0 bg-[#020202]/80 backdrop-blur-xl z-[110] flex items-center justify-between">
+            <div onclick="hideTasks()" class="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
+                <i class="fas fa-chevron-left text-yellow-500"></i>
+            </div>
+            <h2 class="text-xs font-black gold-gradient-text uppercase tracking-widest">Asset Units</h2>
+            <div class="w-10"></div>
+        </header>
+        <div id="task-container" class="px-6 grid grid-cols-2 gap-4"></div>
+    </div>
+
+</div>
+
+<!-- Navigation Dock -->
+<div class="dock-nav">
+    <div onclick="hideTasks()" class="nav-item flex flex-col items-center gap-1 cursor-pointer">
+        <i class="fas fa-home text-lg text-yellow-500" id="nav-home"></i>
+        <span class="text-[7px] uppercase font-bold">Lobby</span>
+    </div>
+    <div onclick="showTasks()" class="nav-item flex flex-col items-center gap-1 cursor-pointer">
+        <i class="fas fa-bolt text-lg text-gray-600" id="nav-tasks"></i>
+        <span class="text-[7px] uppercase font-bold">Assets</span>
+    </div>
+</div>
+
+<!-- Withdraw Modal -->
+<div id="withM" class="fixed inset-0 bg-black/95 z-[2000] hidden flex items-center justify-center p-8 backdrop-blur-md">
+    <div class="glass-panel w-full max-w-sm p-10">
+        <h2 class="text-xl font-black gold-gradient-text mb-6">WITHDRAWAL</h2>
+        <div class="space-y-4">
+            <input type="number" id="withAmt" placeholder="Minimum: -- ৳" class="w-full bg-white/5 p-5 rounded-2xl outline-none text-sm border border-white/5">
+            <input type="text" id="withNum" placeholder="Phone (Nagad/Bkash)" class="w-full bg-white/5 p-5 rounded-2xl outline-none text-sm border border-white/5">
+            <div class="p-4 bg-yellow-500/5 rounded-2xl flex justify-between text-[10px] text-gray-400">
+                <span>Receivable Asset</span>
+                <span id="final-receive" class="text-yellow-500 font-bold">0.00 ৳</span>
+            </div>
+            <button id="btn-withdraw-final" class="btn-gold w-full py-5 rounded-2xl text-[11px]">Authorize Disbursement</button>
+            <button onclick="closeM('withM')" class="w-full text-[9px] text-gray-600 font-black uppercase mt-2">Dismiss</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, onSnapshot, updateDoc, increment, setDoc, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCIXm_8gXbAQiqK-iog_jtd7o6EiozL9oA",
+        authDomain: "trustgain-9c1e9.firebaseapp.com",
+        projectId: "trustgain-9c1e9",
+        storageBucket: "trustgain-9c1e9.firebasestorage.app",
+        messagingSenderId: "320806460423",
+        appId: "1:320806460423:web:f75fe40dbe575128ecdea2"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let userData = null, settings = null, isSignup = false, activeTaskID = null;
+
+    // --- Authentication ---
+    const authBtn = document.getElementById('btn-auth-action');
+    const authToggle = document.getElementById('toggle-auth');
+
+    authToggle.onclick = () => {
+        isSignup = !isSignup;
+        authBtn.innerText = isSignup ? "Create Elite Profile" : "Authorize Access";
+        authToggle.innerText = isSignup ? "Already a Member? Login" : "Create New Elite Profile";
+    };
+
+    authBtn.onclick = async () => {
+        const email = document.getElementById('auth-email').value, pass = document.getElementById('auth-pass').value;
+        if(!email || !pass) return toast('Fields Required', 'error');
+        authBtn.disabled = true;
+        try {
+            if(isSignup) {
+                const res = await createUserWithEmailAndPassword(auth, email, pass);
+                await setDoc(doc(db, "users", res.user.email), { balance: 0, taskHistory: {}, joined: serverTimestamp() });
+            } else { await signInWithEmailAndPassword(auth, email, pass); }
+        } catch (e) { toast(e.message, 'error'); }
+        authBtn.disabled = false;
+    };
+
+    onAuthStateChanged(auth, (user) => {
+        if(user) {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            initCore(user.email);
+        } else {
+            document.getElementById('auth-screen').classList.remove('hidden');
+            document.getElementById('main-app').classList.add('hidden');
+        }
+    });
+
+    // --- Core Systems ---
+    function initCore(email) {
+        // User Data Sync
+        onSnapshot(doc(db, "users", email), (s) => {
+            if(s.exists()){
+                userData = s.data();
+                document.getElementById('main-balance').innerText = userData.balance.toFixed(2);
+                document.getElementById('user-display').innerText = email.split('@')[0].toUpperCase();
+                if(!document.getElementById('task-list-screen').classList.contains('hidden')) renderTaskGrid();
+            }
+        });
+
+        // Global Settings & Notice Control
+        onSnapshot(doc(db, "admin", "settings"), (s) => {
+            if(s.exists()){
+                settings = s.data();
+                document.getElementById('ad-reward-text').innerText = `Reward: ${settings.adReward || 1.00} ৳`;
+                document.getElementById('withAmt').placeholder = `Minimum: ${settings.minWithdraw || 50} ৳`;
+                
+                // Floating Notice Logic
+                if(settings.noticeActive) {
+                    document.getElementById('notice-title').innerText = settings.noticeTitle || "🌟 Trust Gain 🌟 Updates";
+                    document.getElementById('notice-text').innerText = settings.noticeText || "Welcome to the elite network.";
+                    document.getElementById('notice-modal').classList.remove('hidden');
+                }
+            }
+        });
+    }
+
+    // --- Task Logic ---
+    window.showTasks = () => {
+        document.getElementById('task-list-screen').classList.remove('hidden');
+        document.getElementById('home-screen').classList.add('hidden');
+        renderTaskGrid();
+        document.getElementById('nav-tasks').classList.replace('text-gray-600', 'text-yellow-500');
+        document.getElementById('nav-home').classList.replace('text-yellow-500', 'text-gray-600');
+    };
+
+    window.hideTasks = () => {
+        document.getElementById('task-list-screen').classList.add('hidden');
+        document.getElementById('home-screen').classList.remove('hidden');
+        document.getElementById('nav-home').classList.replace('text-gray-600', 'text-yellow-500');
+        document.getElementById('nav-tasks').classList.replace('text-yellow-500', 'text-gray-600');
+    };
+
+    function renderTaskGrid() {
+        const container = document.getElementById('task-container');
+        container.innerHTML = "";
+        const now = Date.now();
+        for (let i = 1; i <= 50; i++) {
+            const lastDone = userData?.taskHistory?.[`task${i}`] || 0, isLocked = (now - lastDone) < (24 * 60 * 60 * 1000);
+            const isPending = activeTaskID === i;
+            const card = document.createElement('div');
+            card.className = `glass-panel p-5 flex flex-col items-center text-center gap-3 ${isLocked ? 'opacity-30' : ''}`;
+            card.innerHTML = `
+                <div class="h-8 w-8 rounded-lg bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20">
+                    <i class="fas ${isLocked ? 'fa-lock' : 'fa-bolt'} text-[10px] text-yellow-500"></i>
+                </div>
+                <span class="text-[8px] font-black text-gray-600 uppercase">Unit #${i}</span>
+                <span class="text-xs font-bold">${settings?.taskReward || '2.00'} ৳</span>
+                ${isLocked ? 
+                    `<button disabled class="w-full py-2 rounded-xl bg-white/5 text-[8px] text-gray-500 font-bold">LOCKED</button>` : 
+                    isPending ? 
+                    `<button onclick="verifyTask(${i})" class="w-full py-2 rounded-xl btn-gold text-[8px] animate-pulse">VERIFY TOKEN</button>` : 
+                    `<button onclick="executeTask(${i})" class="w-full py-2 rounded-xl bg-white/10 text-[8px] font-bold">EXECUTE</button>`}
+            `;
+            container.appendChild(card);
+        }
+    }
+
+    window.executeTask = (id) => {
+        const link = settings?.[`task${id}_link`] || "https://google.com";
+        window.open(link, '_blank');
+        activeTaskID = id;
+        renderTaskGrid();
+    };
+
+    window.verifyTask = async (id) => {
+        const code = settings?.[`task${id}_code`] || "TG", reward = parseFloat(settings?.taskReward || 2);
+        const { value: userInput } = await Swal.fire({ 
+            title: 'DECRYPTION', text: `Enter code for Unit #${id}`, input: 'text', background: '#0a0a0a', color: '#fff', confirmButtonColor: '#FFD700' 
+        });
+        if(userInput === code) {
+            activeTaskID = null;
+            await updateDoc(doc(db, "users", auth.currentUser.email), { balance: increment(reward), [`taskHistory.task${id}`]: Date.now() });
+            toast('Unit Synchronized!', 'success');
+        } else if(userInput) { toast('Invalid Decryption Code', 'error'); }
+    };
+
+    // --- Stream Ad ---
+    window.watchAdTask = () => {
+        const last = userData?.taskHistory?.['ad_task'] || 0;
+        if(Date.now() - last < 24*60*60*1000) return toast('Next Stream Available Tomorrow', 'info');
+        if(settings?.adLink) window.open(settings.adLink, '_blank');
+        let timer = 20;
+        Swal.fire({
+            title: 'Buffering Stream...',
+            html: `<div class="text-4xl font-black gold-gradient-text mt-4" id="ad-timer">${timer}</div>`,
+            showConfirmButton: false, allowOutsideClick: false, background: '#0a0a0a',
+            didOpen: () => {
+                const interval = setInterval(() => {
+                    timer--; if(document.getElementById('ad-timer')) document.getElementById('ad-timer').innerText = timer;
+                    if(timer <= 0) { clearInterval(interval); completeAd(); }
+                }, 1000);
+            }
+        });
+    };
+
+    async function completeAd() {
+        const reward = parseFloat(settings?.adReward || 1.00);
+        await updateDoc(doc(db, "users", auth.currentUser.email), { balance: increment(reward), "taskHistory.ad_task": Date.now() });
+        Swal.fire({ icon: 'success', title: 'Asset Verified', background: '#0a0a0a', color: '#fff' });
+    }
+
+    // --- Financials ---
+    document.getElementById('withAmt').oninput = (e) => {
+        document.getElementById('final-receive').innerText = `${(parseFloat(e.target.value || 0) * 0.85).toFixed(2)} ৳`;
+    };
+
+    document.getElementById('btn-withdraw-final').onclick = async () => {
+        const amt = parseFloat(document.getElementById('withAmt').value), num = document.getElementById('withNum').value, min = settings?.minWithdraw || 50;
+        if(amt < min) return toast(`Min Limit: ${min} ৳`, 'error');
+        if(userData.balance < amt) return toast('Insufficient Assets', 'error');
+        if(!num) return toast('Receiver Required', 'error');
+        await addDoc(collection(db, "withdraws"), { email: auth.currentUser.email, requested: amt, disbursed: amt*0.85, method: num, status: 'pending', timestamp: serverTimestamp() });
+        await updateDoc(doc(db, "users", auth.currentUser.email), { balance: increment(-amt) });
+        toast('Transfer Initialized', 'success'); closeM('withM');
+    };
+
+    // --- Utils ---
+    window.handleLogout = () => signOut(auth);
+    window.openM = (id) => document.getElementById(id).classList.remove('hidden');
+    window.closeM = (id) => document.getElementById(id).classList.add('hidden');
+    function toast(msg, icon) { Swal.fire({ text: msg, icon: icon, toast: true, position: 'top', showConfirmButton: false, timer: 3000, background: '#111', color: '#fff' }); }
+</script>
+</body>
+</html>
