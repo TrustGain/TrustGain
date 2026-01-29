@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>Trust Gain</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;600&family=Hind+Siliguri:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        :root {
+            --gold: #FFD700;
+            --gold-dark: #B8860B;
+            --bg-dark: #020202;
+            --surface: rgba(15, 15, 15, 0.8);
+            --border: rgba(255, 215, 0, 0.15);
+        }
+
+        body {
+            background: var(--bg-dark);
+            color: #fff;
+            font-family: 'Poppins', 'Hind Siliguri', sans-serif;
+            background-image: radial-gradient(circle at 50% 0%, rgba(255, 215, 0, 0.08) 0%, transparent 50%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Optimization */
+        .task-card {
+            content-visibility: auto; 
+            contain-intrinsic-size: 120px;
+            background: var(--surface);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            transition: transform 0.2s;
+        }
+
+        .task-card:active { transform: scale(0.95); }
+
+        .glass-panel {
+            background: var(--surface);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 28px;
+        }
+
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #FFF5B7 0%, #FFD700 50%, #B8860B 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .btn-gold {
+            background: linear-gradient(45deg, #B8860B, #FFD700);
+            color: #000;
+            font-weight: 800;
+            text-transform: uppercase;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+        }
+
+        .dock-nav {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 400px;
+            height: 65px;
+            background: rgba(10, 10, 10, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        ::-webkit-scrollbar { width: 0; }
+        .hidden { display: none; }
+
+        /* Updated High-Converting Ad Screen */
+        #ad-view-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: #000;
+            display: none;
+            flex-direction: column;
+        }
+        #ad-view-screen.active { display: flex; }
+        
+        #ad-iframe {
+            flex: 1;
+            width: 100%;
+            border: none;
+        }
+        
+        .ad-timer-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.85);
+            border: 2px solid var(--gold);
+            padding: 10px 20px;
+            border-radius: 15px;
+            z-index: 10000;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+            pointer-events: none;
+        }
+
+        .ad-timer-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 900;
+            color: var(--gold);
+            display: block;
+        }
+        
+        .ad-status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: 10000;
+        }
+        
+        .ad-progress {
+            height: 100%;
+            background: var(--gold);
+            width: 0%;
+            transition: width 1s linear;
+        }
+    </style>
+</head>
+<body class="pb-32">
+
+<!-- Advertisement Landing Page (Full-Screen Iframe System) -->
+<div id="ad-view-screen">
+    <div class="ad-timer-container">
+        <span class="text-[8px] uppercase text-gray-400 block mb-1">Verifying Unit</span>
+        <span id="ad-sec" class="ad-timer-text">15s</span>
+    </div>
+    <div class="ad-status-bar">
+        <div id="ad-progress-bar" class="ad-progress"></div>
+    </div>
+    <iframe id="ad-iframe" src="about:blank"></iframe>
+</div>
+
+<!-- Notice Window -->
+<div id="notice-modal" class="fixed inset-0 z-[5000] bg-black/90 hidden flex items-center justify-center p-8 backdrop-blur-2xl">
+    <div class="glass-panel w-full max-w-sm p-10 text-center border-yellow-500/30">
+        <i class="fas fa-bullhorn text-4xl gold-gradient-text mb-6"></i>
+        <h2 id="notice-title" class="text-xl font-black gold-gradient-text mb-4 uppercase">Notification</h2>
+        <p id="notice-text" class="text-xs text-gray-400 mb-8 leading-relaxed">Loading updates...</p>
+        <button onclick="closeM('notice-modal')" class="btn-gold px-10 py-3 rounded-xl text-[10px] w-full">Acknowledge</button>
+    </div>
+</div>
+
+<!-- Auth Section -->
+<div id="auth-screen" class="fixed inset-0 z-[2000] bg-[#020202] flex items-center justify-center p-6">
+    <div class="glass-panel w-full max-w-md p-8 text-center">
+        <h1 class="text-3xl gold-gradient-text font-black mb-2">🌟 Trust Gain 🌟</h1>
+        <p id="auth-subtitle" class="text-[8px] text-gray-500 tracking-[0.4em] uppercase mb-8">Elite Financial Network</p>
+        
+        <div class="space-y-4">
+            <input type="text" id="auth-name" placeholder="Full Name" class="hidden w-full bg-white/5 p-4 rounded-xl outline-none text-sm border border-white/5">
+            <input type="email" id="auth-email" placeholder="Member Email" class="w-full bg-white/5 p-4 rounded-xl outline-none text-sm border border-white/5">
+            <input type="password" id="auth-pass" placeholder="Password" class="w-full bg-white/5 p-4 rounded-xl outline-none text-sm border border-white/5">
+            <input type="email" id="auth-ref" placeholder="Referrer Email" class="hidden w-full bg-white/5 p-4 rounded-xl outline-none text-sm border border-white/5">
+            <button id="btn-auth-action" class="btn-gold w-full py-4 rounded-xl text-sm mt-4">Authorize</button>
+            <p id="toggle-auth" class="text-[10px] text-gray-500 cursor-pointer pt-2 uppercase tracking-widest">Create New Profile</p>
+        </div>
+    </div>
+</div>
+
+<!-- Main App -->
+<div id="main-app" class="hidden">
+    <div id="home-screen" class="max-w-md mx-auto">
+        <header class="p-6 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-full border border-yellow-500/30 flex items-center justify-center bg-black">
+                    <i class="fas fa-crown text-xs text-yellow-500"></i>
+                </div>
+                <div>
+                    <h1 id="user-display" class="text-xs font-black gold-gradient-text uppercase">MEMBER</h1>
+                    <p id="user-name-display" class="text-[8px] text-gray-500 uppercase">Asset Holder</p>
+                </div>
+            </div>
+            <div onclick="handleLogout()" class="h-10 w-10 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500">
+                <i class="fas fa-power-off text-xs"></i>
+            </div>
+        </header>
+
+        <section class="px-6 mb-8">
+            <div class="glass-panel p-8 text-center">
+                <p class="text-[9px] text-gray-500 uppercase tracking-widest mb-2">Current Balance</p>
+                <div class="flex items-baseline justify-center gap-1">
+                    <h2 id="main-balance" class="text-5xl font-black gold-gradient-text">0.00</h2>
+                    <span class="text-lg font-bold text-yellow-500/50">৳</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Referral Link -->
+        <section class="px-6 mb-6">
+            <div class="glass-panel p-4 flex justify-between items-center border-dashed">
+                <div class="overflow-hidden">
+                    <p class="text-[7px] text-gray-500 uppercase">Referral Link</p>
+                    <p id="ref-link-text" class="text-[9px] font-bold text-yellow-500 truncate mr-4">---</p>
+                </div>
+                <button onclick="copyRef()" class="shrink-0 text-[8px] bg-yellow-500/20 px-4 py-2 rounded-lg text-yellow-500 font-bold">COPY</button>
+            </div>
+        </section>
+
+        <div class="px-6 grid grid-cols-3 gap-2 mb-8">
+            <div onclick="openM('withM')" class="glass-panel p-4 flex flex-col items-center gap-2 border-b-2 border-yellow-500">
+                <i class="fas fa-wallet text-yellow-500 text-sm"></i>
+                <span class="text-[8px] font-bold uppercase">Withdraw</span>
+            </div>
+            <div onclick="openHistory()" class="glass-panel p-4 flex flex-col items-center gap-2 border-b-2 border-blue-500">
+                <i class="fas fa-history text-blue-500 text-sm"></i>
+                <span class="text-[8px] font-bold uppercase">History</span>
+            </div>
+            <div onclick="window.open('https://t.me/TrustGainPro')" class="glass-panel p-4 flex flex-col items-center gap-2">
+                <i class="fab fa-telegram-plane text-blue-400 text-sm"></i>
+                <span class="text-[8px] font-bold uppercase">Telegram Channel</span>
+            </div>
+        </div>
+
+        <section class="px-6">
+            <div onclick="watchAdTask()" class="glass-panel p-5 flex justify-between items-center group">
+                <div class="flex items-center gap-4">
+                    <div class="h-10 w-10 rounded-xl bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20">
+                        <i class="fas fa-play text-xs text-yellow-500"></i>
+                    </div>
+                    <div>
+                        <p class="text-[11px] font-bold uppercase">Bonus Stream</p>
+                        <p id="ad-reward-text" class="text-[8px] text-gray-500">Reward: 1.00 ৳</p>
+                    </div>
+                </div>
+                <i class="fas fa-arrow-right text-[10px] text-gray-700"></i>
+            </div>
+        </section>
+    </div>
+
+    <!-- 200 Task Screen -->
+    <div id="task-list-screen" class="hidden fixed inset-0 bg-[#020202] z-[100] overflow-y-auto">
+        <header class="p-6 sticky top-0 bg-[#020202]/90 backdrop-blur-md z-[110] flex items-center justify-between border-b border-white/5">
+            <div onclick="hideTasks()" class="h-10 w-10 rounded-xl bg-white/5 flex items-center justify-center">
+                <i class="fas fa-chevron-left text-yellow-500"></i>
+            </div>
+            <h2 class="text-[10px] font-black gold-gradient-text uppercase tracking-widest">Asset Units (200)</h2>
+            <div class="w-10"></div>
+        </header>
+        <div id="task-container" class="px-4 py-6 grid grid-cols-2 gap-3"></div>
+    </div>
+</div>
+
+<!-- Nav -->
+<div class="dock-nav">
+    <div onclick="hideTasks()" class="flex flex-col items-center gap-1">
+        <i class="fas fa-home text-lg text-yellow-500" id="nav-home"></i>
+        <span class="text-[7px] uppercase font-bold">Lobby</span>
+    </div>
+    <div onclick="showTasks()" class="flex flex-col items-center gap-1">
+        <i class="fas fa-grid-2 text-lg text-gray-600" id="nav-tasks"></i>
+        <span class="text-[7px] uppercase font-bold">Assets</span>
+    </div>
+</div>
+
+<!-- Withdraw Modal -->
+<div id="withM" class="fixed inset-0 bg-black/95 z-[2000] hidden flex items-center justify-center p-8">
+    <div class="glass-panel w-full max-w-sm p-8">
+        <h2 class="text-lg font-black gold-gradient-text mb-6 uppercase">Withdrawal</h2>
+        <div class="space-y-4">
+            <input type="number" id="withAmt" placeholder="Amount" class="w-full bg-white/5 p-4 rounded-xl outline-none text-sm border border-white/5">
+            <input type="text" id="withNum" placeholder="Phone Number" class="w-full bg-white/5 p-4 rounded-xl outline-none text-sm border border-white/5">
+            <div class="p-3 bg-yellow-500/5 rounded-xl flex justify-between text-[9px]">
+                <span class="text-gray-500">Final (Fees 15%)</span>
+                <span id="final-receive" class="text-yellow-500 font-bold">0.00 ৳</span>
+            </div>
+            <button id="btn-withdraw-final" class="btn-gold w-full py-4 rounded-xl text-[10px]">Confirm</button>
+            <button onclick="closeM('withM')" class="w-full text-[8px] text-gray-600 mt-2 uppercase">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Withdrawal History Modal -->
+<div id="historyM" class="fixed inset-0 bg-black/95 z-[2000] hidden flex items-center justify-center p-6">
+    <div class="glass-panel w-full max-w-sm p-6 max-h-[80vh] flex flex-col">
+        <h2 class="text-lg font-black gold-gradient-text mb-4 uppercase">Withdraw History</h2>
+        <div id="history-content" class="flex-1 overflow-y-auto space-y-3 pr-2">
+            <p class="text-[10px] text-gray-500 text-center py-10">Loading history...</p>
+        </div>
+        <button onclick="closeM('historyM')" class="btn-gold w-full py-3 rounded-xl text-[10px] mt-4">Close</button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, onSnapshot, updateDoc, increment, setDoc, collection, addDoc, serverTimestamp, getDoc, query, where, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCIXm_8gXbAQiqK-iog_jtd7o6EiozL9oA",
+        authDomain: "trustgain-9c1e9.firebaseapp.com",
+        projectId: "trustgain-9c1e9",
+        storageBucket: "trustgain-9c1e9.firebasestorage.app",
+        messagingSenderId: "320806460423",
+        appId: "1:320806460423:web:f75fe40dbe575128ecdea2"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    let userData = null, settings = null, isSignup = false, activeTaskID = null;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const refFromUrl = urlParams.get('ref');
+
+    // UI Auth
+    const authBtn = document.getElementById('btn-auth-action');
+    const authToggle = document.getElementById('toggle-auth');
+    const nameInput = document.getElementById('auth-name');
+    const refInput = document.getElementById('auth-ref');
+
+    authToggle.onclick = () => {
+        isSignup = !isSignup;
+        authBtn.innerText = isSignup ? "Create Profile" : "Authorize";
+        authToggle.innerText = isSignup ? "Login instead" : "Create New Profile";
+        nameInput.classList.toggle('hidden', !isSignup);
+        refInput.classList.toggle('hidden', !isSignup);
+        if(isSignup && refFromUrl) refInput.value = refFromUrl;
+    };
+
+    authBtn.onclick = async () => {
+        const email = document.getElementById('auth-email').value;
+        const pass = document.getElementById('auth-pass').value;
+        if(!email || !pass) return toast('Fields Required', 'error');
+        authBtn.disabled = true;
+        try {
+            if(isSignup) {
+                const res = await createUserWithEmailAndPassword(auth, email, pass);
+                await setDoc(doc(db, "users", res.user.email), { 
+                    name: nameInput.value || "Member", balance: 0, referredBy: refInput.value || null, taskHistory: {}, joined: serverTimestamp() 
+                });
+            } else { await signInWithEmailAndPassword(auth, email, pass); }
+        } catch (e) { toast(e.message, 'error'); }
+        authBtn.disabled = false;
+    };
+
+    onAuthStateChanged(auth, (user) => {
+        if(user) {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            document.getElementById('ref-link-text').innerText = `${window.location.origin}${window.location.pathname}?ref=${user.email}`;
+            initCore(user.email);
+        } else {
+            document.getElementById('auth-screen').classList.remove('hidden');
+            document.getElementById('main-app').classList.add('hidden');
+        }
+    });
+
+    function initCore(email) {
+        onSnapshot(doc(db, "users", email), (s) => {
+            if(s.exists()){
+                userData = s.data();
+                document.getElementById('main-balance').innerText = userData.balance.toFixed(2);
+                document.getElementById('user-display').innerText = email.split('@')[0].toUpperCase();
+                document.getElementById('user-name-display').innerText = userData.name;
+                if(!document.getElementById('task-list-screen').classList.contains('hidden')) renderTaskGrid();
+            }
+        });
+
+        onSnapshot(doc(db, "admin", "settings"), (s) => {
+            if(s.exists()){
+                settings = s.data();
+                document.getElementById('ad-reward-text').innerText = `Reward: ${settings.adReward || 1.00} ৳`;
+                if(settings.noticeActive) {
+                    document.getElementById('notice-title').innerText = settings.noticeTitle;
+                    document.getElementById('notice-text').innerText = settings.noticeText;
+                    document.getElementById('notice-modal').classList.remove('hidden');
+                }
+            }
+        });
+    }
+
+    async function distributeCommission(baseReward) {
+        if(userData?.referredBy && settings?.refCommission) {
+            const commission = (baseReward * parseFloat(settings.refCommission)) / 100;
+            const refRef = doc(db, "users", userData.referredBy);
+            const refSnap = await getDoc(refRef);
+            if(refSnap.exists()) await updateDoc(refRef, { balance: increment(commission) });
+        }
+    }
+
+    // --- UPDATED AD LANDING PAGE SYSTEM ---
+    function startAdExperience(url, onComplete) {
+        const adScreen = document.getElementById('ad-view-screen');
+        const adIframe = document.getElementById('ad-iframe');
+        const adSec = document.getElementById('ad-sec');
+        const progressBar = document.getElementById('ad-progress-bar');
+
+        // Initial UI State
+        adIframe.src = url;
+        adScreen.classList.add('active');
+        progressBar.style.width = '0%';
+        
+        let timeLeft = 15;
+        adSec.innerText = timeLeft + "s";
+
+        const timerInterval = setInterval(async () => {
+            timeLeft--;
+            adSec.innerText = timeLeft + "s";
+            progressBar.style.width = ((15 - timeLeft) / 15 * 100) + '%';
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                
+                // AUTO COMPLETION LOGIC
+                // Mark transaction as Cleared in background and close
+                try {
+                    await onComplete(); // Executes Firebase Reward Logic
+                    // Redirect back to dashboard (Close UI)
+                    adScreen.classList.remove('active');
+                    adIframe.src = "about:blank";
+                } catch (err) {
+                    console.error("Reward System Failure:", err);
+                    toast("Sync Error - Try Again", "error");
+                    adScreen.classList.remove('active');
+                }
+            }
+        }, 1000);
+    }
+
+    window.renderTaskGrid = () => {
+        const container = document.getElementById('task-container');
+        const fragment = document.createDocumentFragment();
+        container.innerHTML = "";
+        const now = Date.now();
+        const taskReward = settings?.taskReward || '2.00';
+
+        for (let i = 1; i <= 200; i++) {
+            const lastDone = userData?.taskHistory?.[`task${i}`] || 0;
+            const isLocked = (now - lastDone) < (24 * 60 * 60 * 1000);
+            const hasCode = settings?.[`task${i}_code`] && settings?.[`task${i}_code`] !== "";
+
+            const card = document.createElement('div');
+            card.className = `task-card p-4 flex flex-col items-center gap-2 ${isLocked ? 'opacity-40' : ''}`;
+            
+            let btnHtml = isLocked ? 
+                `<button disabled class="w-full py-2 bg-white/5 rounded-lg text-[7px] text-gray-500 font-bold uppercase">Locked</button>` :
+                (activeTaskID === i ? 
+                    (hasCode ? `<button onclick="verifyTask(${i})" class="w-full py-2 btn-gold rounded-lg text-[7px] animate-pulse">Verify</button>` : `<button class="w-full py-2 btn-gold rounded-lg text-[7px] animate-pulse">Syncing</button>`) :
+                    `<button onclick="executeTask(${i})" class="w-full py-2 bg-yellow-500/10 rounded-lg text-[7px] font-bold text-yellow-500 uppercase">Execute</button>`);
+
+            card.innerHTML = `
+                <div class="text-yellow-500/30 text-[10px]"><i class="fas fa-microchip"></i></div>
+                <span class="text-[7px] text-gray-500 font-bold uppercase tracking-tighter">Unit #${i}</span>
+                <span class="text-[11px] font-black">${taskReward} ৳</span>
+                ${btnHtml}
+            `;
+            fragment.appendChild(card);
+        }
+        container.appendChild(fragment);
+    };
+
+    window.executeTask = async (id) => {
+        const link = settings?.[`task${id}_link`] || "https://google.com";
+        const code = settings?.[`task${id}_code`];
+        
+        if(!code || code === "") {
+            // New High-Converting Ad Landing Page System
+            startAdExperience(link, async () => {
+                const reward = parseFloat(settings?.taskReward || 2);
+                const userRef = doc(db, "users", auth.currentUser.email);
+                
+                // Secure background mark as 'Cleared'
+                await updateDoc(userRef, { 
+                    balance: increment(reward), 
+                    [`taskHistory.task${id}`]: Date.now() 
+                });
+                await distributeCommission(reward);
+                toast('Unit Synchronized', 'success');
+                renderTaskGrid();
+            });
+        } else {
+            window.open(link, '_blank');
+            activeTaskID = id;
+            renderTaskGrid();
+        }
+    };
+
+    window.verifyTask = async (id) => {
+        const code = settings?.[`task${id}_code`], reward = parseFloat(settings?.taskReward || 2);
+        const { value: input } = await Swal.fire({ title: 'Verify Unit', input: 'text', background: '#0a0a0a', color: '#fff' });
+        if(input === code) {
+            activeTaskID = null;
+            await updateDoc(doc(db, "users", auth.currentUser.email), { balance: increment(reward), [`taskHistory.task${id}`]: Date.now() });
+            await distributeCommission(reward);
+            toast('Unit Synchronized', 'success');
+            renderTaskGrid();
+        } else if(input) { toast('Wrong Code', 'error'); }
+    };
+
+    window.watchAdTask = () => {
+        const last = userData?.taskHistory?.['ad_task'] || 0;
+        if(Date.now() - last < 24*60*60*1000) return toast('Come back later', 'info');
+        
+        const adLink = settings?.adLink || "https://www.google.com";
+        
+        startAdExperience(adLink, async () => {
+            const reward = parseFloat(settings?.adReward || 1.00);
+            await updateDoc(doc(db, "users", auth.currentUser.email), { 
+                balance: increment(reward), 
+                "taskHistory.ad_task": Date.now() 
+            });
+            await distributeCommission(reward);
+            Swal.fire({ icon: 'success', title: 'Reward Added', background: '#0a0a0a' });
+        });
+    };
+
+    window.showTasks = () => {
+        document.getElementById('task-list-screen').classList.remove('hidden');
+        document.getElementById('home-screen').classList.add('hidden');
+        renderTaskGrid();
+    };
+
+    window.hideTasks = () => {
+        document.getElementById('task-list-screen').classList.add('hidden');
+        document.getElementById('home-screen').classList.remove('hidden');
+    };
+
+    window.copyRef = () => {
+        navigator.clipboard.writeText(document.getElementById('ref-link-text').innerText);
+        toast('Link Copied', 'success');
+    };
+
+    document.getElementById('withAmt').oninput = (e) => {
+        document.getElementById('final-receive').innerText = `${(parseFloat(e.target.value || 0) * 0.85).toFixed(2)} ৳`;
+    };
+
+    document.getElementById('btn-withdraw-final').onclick = async () => {
+        const amt = parseFloat(document.getElementById('withAmt').value), num = document.getElementById('withNum').value;
+        const min = settings?.minWithdraw || 50;
+        if(amt < min || userData.balance < amt || !num) return toast('Invalid Request', 'error');
+        await addDoc(collection(db, "withdraws"), { email: auth.currentUser.email, requested: amt, disbursed: amt*0.85, method: num, status: 'pending', timestamp: serverTimestamp() });
+        await updateDoc(doc(db, "users", auth.currentUser.email), { balance: increment(-amt) });
+        toast('Withdrawal Pending', 'success'); closeM('withM');
+    };
+
+    window.openHistory = async () => {
+        openM('historyM');
+        const content = document.getElementById('history-content');
+        content.innerHTML = '<p class="text-[10px] text-gray-500 text-center py-10">Syncing history...</p>';
+        try {
+            const q = query(collection(db, "withdraws"), where("email", "==", auth.currentUser.email), orderBy("timestamp", "desc"));
+            const snap = await getDocs(q);
+            if(snap.empty) {
+                content.innerHTML = '<p class="text-[10px] text-gray-600 text-center py-10 uppercase">No history found</p>';
+                return;
+            }
+            let html = "";
+            snap.forEach(doc => {
+                const data = doc.data();
+                const statusColor = data.status === 'pending' ? 'text-yellow-500' : 'text-green-500';
+                html += `
+                    <div class="bg-white/5 border border-white/5 p-4 rounded-2xl flex justify-between items-center">
+                        <div>
+                            <p class="text-[10px] font-bold">${data.requested.toFixed(2)} ৳</p>
+                            <p class="text-[7px] text-gray-500 uppercase tracking-widest">${data.method}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-[8px] font-black uppercase ${statusColor}">${data.status}</p>
+                            <p class="text-[6px] text-gray-600">${data.timestamp ? new Date(data.timestamp.toDate()).toLocaleDateString() : 'recent'}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            content.innerHTML = html;
+        } catch (e) { content.innerHTML = '<p class="text-[10px] text-red-500 text-center py-10 uppercase">Error</p>'; }
+    };
+
+    window.handleLogout = () => signOut(auth);
+    window.openM = (id) => document.getElementById(id).classList.remove('hidden');
+    window.closeM = (id) => document.getElementById(id).classList.add('hidden');
+    function toast(msg, icon) { Swal.fire({ text: msg, icon: icon, toast: true, position: 'top', showConfirmButton: false, timer: 3000, background: '#111', color: '#fff' }); }
+</script>
+</body>
+</html>
